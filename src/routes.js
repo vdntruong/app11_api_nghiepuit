@@ -11,7 +11,7 @@ const routes = [
 		main: () => <HomePage />
 	},
 	{
-		path: '/products',
+		path: '/product-list',
 		exact: false,
 		main: () => <ProductListPage />
 	},
@@ -19,6 +19,11 @@ const routes = [
 		path: '/product/add',
 		exact: false,
 		main: () => <ProductAddPage />
+	},
+	{
+		path: '/product/edit/:id',
+		exact: false,
+		main: ({ match }) => <ProductAddPage match={match} />
 	},
 	{
 		path: '',
