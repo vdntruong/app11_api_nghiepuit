@@ -1,6 +1,13 @@
 import React, { Component } from 'react'
-
+import { Link } from 'react-router-dom'
 export default class ProductItem extends Component {
+
+  handleDelete = (id) => {
+    if (confirm('Xóa là mất đấy...')) { // eslint-disable-line
+      this.props.onDeleteProduct(id);
+    }
+  }
+
   render() {
     let { product, index } = this.props;
     return (
@@ -14,8 +21,8 @@ export default class ProductItem extends Component {
         </td>
         <td>
           <div className="btn-group btn-group-sm" role="group">
-            <button type="button" className="btn btn-warning"> Sửa </button>
-            <button type="button" className="btn btn-danger"> Xóa </button>
+            <Link className="btn btn-warning" to={`/product/edit/${product.id}`}> Sửa </Link>
+            <button type="button" className="btn btn-danger" onClick={() => this.handleDelete(product.id)}> Xóa </button>
           </div>
         </td>
       </tr>

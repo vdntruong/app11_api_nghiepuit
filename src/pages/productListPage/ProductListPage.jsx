@@ -2,21 +2,16 @@ import React, { Component } from 'react';
 import ProductList from '../../components/productList/ProductList';
 import ProductItem from '../../components/productItem/ProductItem';
 import { connect } from 'react-redux';
-import apiCaller from '../../utils/apiCaller';
+import { actFetchProductsRequest, actDeleteProductRequest } from '../../actions';
 
 class ProductListPage extends Component {
-	constructor(props) {
-		super(props);
-		this.state = {
-			products: []
-		};
+	componentDidMount() {
+		this.props.fetchAllProducts();
 	}
 
-	componentDidMount() {
-		apiCaller('products', null).then((res) => {
-			this.setState({ products: [ ...res.data ] });
-		});
-	}
+	handleDeleteProduct = (id) => {
+		this.props.onDeleteProduct(id);
+	};
 
 	render() {
 		let { products } = this.props;
@@ -25,17 +20,25 @@ class ProductListPage extends Component {
 				<ProductList>
 					{products &&
 						products.map((p, i) => {
-							return <ProductItem key={i} product={p} index={i} />;
+							return (
+								<ProductItem key={i} product={p} index={i} onDeleteProduct={this.handleDeleteProduct} />
+							);
 						})}
 				</ProductList>
 			</div>
 		);
 	}
 }
-const mapStateToProps = (state) => {
-	return {
-		products: state.products
-	};
-};
 
-export default connect(mapStateToProps, null)(ProductListPage);
+const mapStateToProps = (state) => ({
+	products: state.products
+});
+const mapDispatchtoProps = (dispatch, props) => ({
+	fetchAllProducts: () => {
+		dispatch(actFetchProductsRequest());
+	},
+	onDeleteProduct: (id) => {
+		dispatch(actDeleteProductRequest(id));
+	}
+});
+export default connect(mapStateToProps, mapDispatchtoProps)(ProductListPage);

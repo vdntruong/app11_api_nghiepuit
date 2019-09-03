@@ -1,6 +1,9 @@
 import React, { Component } from 'react';
-import callApi from '../../utils/apiCaller';
-export default class ProductAddPage extends Component {
+import { Link } from 'react-router-dom';
+import { actAddProductRequest, actGetProductByIDRequest, actUpdateProductRequest } from '../../actions';
+import { connect } from 'react-redux';
+
+class ProductAddPage extends Component {
 	constructor(props) {
 		super(props);
 		this.state = {
@@ -11,6 +14,18 @@ export default class ProductAddPage extends Component {
 		};
 	}
 
+	componentDidMount() {
+		if (this.props.match) {
+			let { id } = this.props.match.params;
+			this.props.onGetProductEdit(id);
+		}
+	}
+	UNSAFE_componentWillReceiveProps(nextProps) {
+		if (nextProps && nextProps.editingProduct) {
+			this.setState({ ...nextProps.editingProduct });
+		}
+	}
+
 	handleChange = (e) => {
 		let { name, value } = e.target;
 		if (name === 'status') value = e.target.checked;
@@ -18,29 +33,20 @@ export default class ProductAddPage extends Component {
 			[name]: value
 		});
 	};
+
 	handleSubmit = (e) => {
 		e.preventDefault();
-		let { name, price, status } = this.state;
-		callApi(
-			'products',
-			{
-				name,
-				price,
-				status
-			},
-			'POST'
-		).then((res) => {
-			console.log(res);
-		});
+		let { history, match } = this.props;
+		let { id, name, price, status } = this.state;
+		if (match) {
+			this.props.onUpdateProduct({ id, name, price, status });
+			history.goBack();
+		} else {
+			this.props.onAddProduct({ id, name, price, status });
+			history.goBack();
+		}
 	};
-	clearAll = () => {
-		this.setState({
-			id: '',
-			name: '',
-			price: 0,
-			status: true
-		});
-	};
+
 	render() {
 		let { id, name, status, price } = this.state;
 		return (
@@ -55,6 +61,7 @@ export default class ProductAddPage extends Component {
 							defaultValue={id}
 							name="id"
 							onChange={this.handleChange}
+							readOnly={this.props.match ? true : false}
 						/>
 						<small className="form-text text-muted">Đặt mã phân biệt các sản phẩm</small>
 					</div>
@@ -76,7 +83,7 @@ export default class ProductAddPage extends Component {
 							type="number"
 							className="form-control"
 							placeholder="nhập giá sản phẩm"
-							defaultValue={price}
+							value={price}
 							name="price"
 							onChange={this.handleChange}
 						/>
@@ -87,7 +94,7 @@ export default class ProductAddPage extends Component {
 							type="checkbox"
 							className="form-check-input"
 							id="check"
-							defaultChecked={status}
+							checked={status}
 							name="status"
 							onChange={this.handleChange}
 						/>
@@ -96,13 +103,29 @@ export default class ProductAddPage extends Component {
 						</label>
 					</div>
 					<button type="submit" className="btn btn-primary mr-2">
-						Thêm mới
+						{this.props.match ? 'Lưu' : 'Thêm mới'}
 					</button>
-					<button className="btn btn-warning" onClick={this.clearAll}>
+					<Link to="/product-list" className="btn btn-warning">
 						Hủy bỏ
-					</button>
+					</Link>
 				</form>
 			</div>
 		);
 	}
 }
+
+const mapStateToProps = (state) => ({
+	editingProduct: state.editingProduct
+});
+const mapDispathToProps = (dispatch, props) => ({
+	onAddProduct: (product) => {
+		dispatch(actAddProductRequest(product));
+	},
+	onGetProductEdit: (id) => {
+		dispatch(actGetProductByIDRequest(id));
+	},
+	onUpdateProduct: (product) => {
+		dispatch(actUpdateProductRequest(product));
+	}
+});
+export default connect(mapStateToProps, mapDispathToProps)(ProductAddPage);
